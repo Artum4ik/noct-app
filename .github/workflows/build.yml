@@ -30,13 +30,32 @@ jobs:
           python3-dev \
           python3-venv
 
+    - name: Install Android SDK and aidl
+      run: |
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        unzip commandlinetools-linux-11076708_latest.zip
+        mkdir -p android-sdk/cmdline-tools
+        mv cmdline-tools android-sdk/cmdline-tools/latest
+        export ANDROID_SDK_ROOT=$PWD/android-sdk
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+        yes | sdkmanager --licenses
+        sdkmanager "build-tools;33.0.2"
+        sdkmanager "platform-tools"
+        sdkmanager "platforms;android-30"
+
+    - name: Set up environment variables
+      run: |
+        echo "ANDROID_SDK_ROOT=$PWD/android-sdk" >> $GITHUB_ENV
+        echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
+
     - name: Install Python and Buildozer
       run: |
         python3 -m pip install --upgrade pip
         python3 -m pip install --user cython buildozer
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: Checkout code (manual)
+    - name: Checkout code
       run: |
         git clone https://github.com/${{ github.repository }}.git repo
         cd repo
