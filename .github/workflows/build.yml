@@ -30,8 +30,9 @@ jobs:
           python3-dev \
           python3-venv
 
-    - name: Install Android SDK and aidl
+    - name: Install Android SDK and NDK
       run: |
+        # SDK
         wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
         unzip commandlinetools-linux-11076708_latest.zip
         mkdir -p android-sdk/cmdline-tools
@@ -43,18 +44,24 @@ jobs:
         sdkmanager "platform-tools"
         sdkmanager "platforms;android-30"
         sdkmanager "tools"
+        
+        # NDK
+        wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
+        unzip android-ndk-r23b-linux.zip
+        mv android-ndk-r23b android-ndk
 
     - name: Set up environment variables
       run: |
         echo "ANDROID_SDK_ROOT=$PWD/android-sdk" >> $GITHUB_ENV
+        echo "ANDROID_NDK_ROOT=$PWD/android-ndk" >> $GITHUB_ENV
         echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
         echo "$PWD/android-sdk/build-tools/33.0.2" >> $GITHUB_PATH
 
-    - name: Install Python and Buildozer
+    - name: Install Python and p4a
       run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install --user cython buildozer
+        python3 -m pip install --user cython python-for-android
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: Checkout code
@@ -65,24 +72,30 @@ jobs:
         cp -r * ..
         cd ..
 
-    - name: Configure Buildozer to use custom SDK
-      run: |
-        mkdir -p ~/.buildozer/android/platform
-        rm -rf ~/.buildozer/android/platform/android-sdk
-        ln -s $PWD/android-sdk ~/.buildozer/android/platform/android-sdk
-
-    - name: Build APK with verbose logs
+    - name: Build APK with p4a
       run: |
         export ANDROID_SDK_ROOT=$PWD/android-sdk
+        export ANDROID_NDK_ROOT=$PWD/android-ndk
         export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools/33.0.2:$PATH
-        buildozer android debug deploy run --verbose
+        
+        p4a apk \
+          --private . \
+          --package=com.artum4ik.noctapp \
+          --name "Noct Interpreter" \
+          --version 1.0 \
+          --bootstrap=sdl2 \
+          --requirements=python3,kivy \
+          --arch arm64-v8a \
+          --android-api 30 \
+          --sdk-dir $ANDROID_SDK_ROOT \
+          --ndk-dir $ANDROID_NDK_ROOT \
+          --debug
       env:
         BUILD_NUMBER: ${{ github.run_number }}
-        ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: noct-app
-        path: bin/*.apk
+        path: dist/*.apk
         retention-days: 30
