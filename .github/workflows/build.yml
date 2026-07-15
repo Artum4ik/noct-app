@@ -36,12 +36,17 @@ jobs:
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
           echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
 
+      - name: Install Cython and dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install cython setuptools wheel
+
       - name: Install Android SDK and NDK
         run: |
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
           
-          # Устанавливаем SDK через sdkmanager (работает с Java 17)
+          # Устанавливаем SDK через sdkmanager
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip commandlinetools-linux-11076708_latest.zip
           mkdir -p android-sdk/cmdline-tools
@@ -49,7 +54,6 @@ jobs:
           export ANDROID_SDK_ROOT=$PWD/android-sdk
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
           
-          # Используем Java 17 для sdkmanager
           yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
           sdkmanager "build-tools;33.0.2" --sdk_root=$ANDROID_SDK_ROOT
           sdkmanager "platform-tools" --sdk_root=$ANDROID_SDK_ROOT
@@ -94,6 +98,8 @@ jobs:
             --sdk-dir $ANDROID_SDK_ROOT \
             --ndk-dir $ANDROID_NDK_ROOT \
             --debug
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
