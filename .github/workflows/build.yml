@@ -45,12 +45,14 @@ jobs:
           export ANDROID_SDK_ROOT=$PWD/android-sdk
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
           
-          # Добавляем недостающие JAR-файлы для Java 17
-          wget https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar
-          wget https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.1/jaxb-impl-2.3.1.jar
-          wget https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+          # Скачиваем недостающие JAR-файлы для Java 17
           mkdir -p android-sdk/lib
-          mv *.jar android-sdk/lib/
+          wget -P android-sdk/lib/ https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar
+          wget -P android-sdk/lib/ https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.1/jaxb-impl-2.3.1.jar
+          wget -P android-sdk/lib/ https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+          
+          # Добавляем JAR-файлы в classpath при вызове sdkmanager
+          export CLASSPATH="$ANDROID_SDK_ROOT/lib/jaxb-api-2.3.1.jar:$ANDROID_SDK_ROOT/lib/jaxb-impl-2.3.1.jar:$ANDROID_SDK_ROOT/lib/activation-1.1.1.jar"
           
           yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
           sdkmanager "build-tools;33.0.2" --sdk_root=$ANDROID_SDK_ROOT
@@ -83,6 +85,7 @@ jobs:
           export PATH=$JAVA_HOME/bin:$PATH
           export ANDROID_SDK_ROOT=$PWD/android-sdk
           export PATH=$ANDROID_SDK_ROOT/build-tools/33.0.2:$ANDROID_SDK_ROOT/lib:$PATH
+          export CLASSPATH="$ANDROID_SDK_ROOT/lib/jaxb-api-2.3.1.jar:$ANDROID_SDK_ROOT/lib/jaxb-impl-2.3.1.jar:$ANDROID_SDK_ROOT/lib/activation-1.1.1.jar"
           buildozer android debug deploy run
         env:
           ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
