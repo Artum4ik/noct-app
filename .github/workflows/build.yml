@@ -5,32 +5,16 @@ on:
   push:
     branches: [ main ]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-
     - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
+          openjdk-17-jdk \
           autoconf \
           libtool \
           pkg-config \
@@ -43,13 +27,22 @@ jobs:
           libssl-dev \
           zip \
           python3-pip \
-          python3-dev
+          python3-dev \
+          python3-venv
 
-    - name: Install Python dependencies
+    - name: Install Python and Buildozer
       run: |
-        python -m pip install --upgrade pip
-        pip install --user cython buildozer
+        python3 -m pip install --upgrade pip
+        python3 -m pip install --user cython buildozer
         echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Checkout code (manual)
+      run: |
+        git clone https://github.com/${{ github.repository }}.git repo
+        cd repo
+        git checkout ${{ github.sha }}
+        cp -r * ..
+        cd ..
 
     - name: Build APK
       run: |
