@@ -82,10 +82,11 @@ jobs:
         echo "$PWD/android-ndk" >> $GITHUB_PATH
         echo "/usr/local/bin" >> $GITHUB_PATH
 
-    - name: Install Python and p4a
+    - name: Install Python, Cython and p4a
       run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install --user cython python-for-android
+        python3 -m pip install --user cython setuptools wheel
+        python3 -m pip install --user python-for-android
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: Checkout code
@@ -100,7 +101,7 @@ jobs:
       run: |
         export ANDROID_SDK_ROOT=$PWD/android-sdk
         export ANDROID_NDK_ROOT=$PWD/android-ndk
-        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools/33.0.2:$ANDROID_NDK_ROOT:/usr/local/bin:$PATH
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools/33.0.2:$ANDROID_NDK_ROOT:/usr/local/bin:$HOME/.local/bin:$PATH
         export AUTOCONF_VERSION=2.69
         export AUTOMAKE_VERSION=1.16
         
