@@ -57,6 +57,13 @@ jobs:
           echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
           echo "$PWD/android-sdk/build-tools/33.0.2" >> $GITHUB_PATH
 
+      - name: Link aidl for Buildozer
+        run: |
+          mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools/33.0.2
+          ln -sf $PWD/android-sdk/build-tools/33.0.2/aidl ~/.buildozer/android/platform/android-sdk/build-tools/33.0.2/aidl
+          ln -sf $PWD/android-sdk/build-tools/33.0.2/aapt2 ~/.buildozer/android/platform/android-sdk/build-tools/33.0.2/aapt2
+          ln -sf $PWD/android-sdk/build-tools/33.0.2/zipalign ~/.buildozer/android/platform/android-sdk/build-tools/33.0.2/zipalign
+
       - name: Install Python packages
         run: |
           pip install --user cython buildozer
