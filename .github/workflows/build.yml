@@ -18,13 +18,26 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install Java 17 and dependencies
         run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev
+          sudo apt-get update
+          sudo apt-get install -y \
+            openjdk-17-jdk \
+            git \
+            zip \
+            unzip \
+            python3-pip \
+            autoconf \
+            libtool \
+            pkg-config \
+            zlib1g-dev
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
 
       - name: Install Android SDK and aidl
         run: |
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export PATH=$JAVA_HOME/bin:$PATH
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip commandlinetools-linux-11076708_latest.zip
           mkdir -p android-sdk/cmdline-tools
@@ -51,6 +64,8 @@ jobs:
 
       - name: Build APK
         run: |
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export PATH=$JAVA_HOME/bin:$PATH
           buildozer android debug deploy run
         env:
           ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
