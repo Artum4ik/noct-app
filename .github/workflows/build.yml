@@ -33,12 +33,10 @@ jobs:
           python3-dev \
           python3-venv
 
-    - name: Fix libtool macros
+    - name: Fix libtool macros in p4a
       run: |
-        sudo cp /usr/share/aclocal/libtool.m4 /usr/share/aclocal/libtool.m4.bak
-        echo "AC_DEFUN([LT_SYS_SYMBOL_USCORE], [])" | sudo tee -a /usr/share/aclocal/libtool.m4
-        echo "AC_DEFUN([LT_SYS_DLOPEN_SELF], [])" | sudo tee -a /usr/share/aclocal/libtool.m4
-        cd /usr/share/aclocal
+        git clone https://github.com/kivy/python-for-android.git
+        cd python-for-android
         sudo autoreconf -fiv
 
     - name: Install Android SDK and NDK
