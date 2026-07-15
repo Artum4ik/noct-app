@@ -65,6 +65,12 @@ jobs:
         cp -r * ..
         cd ..
 
+    - name: Configure Buildozer to use custom SDK
+      run: |
+        mkdir -p ~/.buildozer/android/platform
+        ln -s $PWD/android-sdk ~/.buildozer/android/platform/android-sdk
+        ln -s $PWD/android-sdk/build-tools/33.0.2 ~/.buildozer/android/platform/android-sdk/build-tools
+
     - name: Build APK
       run: |
         export ANDROID_SDK_ROOT=$PWD/android-sdk
@@ -72,6 +78,7 @@ jobs:
         buildozer android debug deploy run
       env:
         BUILD_NUMBER: ${{ github.run_number }}
+        ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
