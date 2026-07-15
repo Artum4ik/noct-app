@@ -35,18 +35,18 @@ jobs:
           echo "JAVA_HOME_11=/usr/lib/jvm/java-11-openjdk-amd64" >> $GITHUB_ENV
           echo "JAVA_HOME_17=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
 
-      - name: Install Android SDK and aidl (using Java 11)
+      - name: Install Android SDK and aidl (using Java 11 + old sdkmanager)
         run: |
           export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip commandlinetools-linux-11076708_latest.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
+          unzip commandlinetools-linux-7583922_latest.zip
           mkdir -p android-sdk/cmdline-tools
           mv cmdline-tools android-sdk/cmdline-tools/latest
           export ANDROID_SDK_ROOT=$PWD/android-sdk
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
           yes | sdkmanager --licenses
-          sdkmanager "build-tools;33.0.2"
+          sdkmanager "build-tools;30.0.3"
           sdkmanager "platform-tools"
           sdkmanager "platforms;android-30"
           sdkmanager "tools"
@@ -56,7 +56,7 @@ jobs:
           echo "ANDROID_SDK_ROOT=$PWD/android-sdk" >> $GITHUB_ENV
           echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
-          echo "$PWD/android-sdk/build-tools/33.0.2" >> $GITHUB_PATH
+          echo "$PWD/android-sdk/build-tools/30.0.3" >> $GITHUB_PATH
 
       - name: Link SDK for Buildozer
         run: |
@@ -74,7 +74,7 @@ jobs:
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
           export ANDROID_SDK_ROOT=$PWD/android-sdk
-          export PATH=$ANDROID_SDK_ROOT/build-tools/33.0.2:$PATH
+          export PATH=$ANDROID_SDK_ROOT/build-tools/30.0.3:$PATH
           buildozer android debug deploy run
         env:
           ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
