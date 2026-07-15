@@ -18,10 +18,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Java 17 and dependencies
+      - name: Install Java 11 and Java 17
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            openjdk-11-jdk \
             openjdk-17-jdk \
             git \
             zip \
@@ -31,12 +32,12 @@ jobs:
             libtool \
             pkg-config \
             zlib1g-dev
-          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
-          echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME_11=/usr/lib/jvm/java-11-openjdk-amd64" >> $GITHUB_ENV
+          echo "JAVA_HOME_17=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
 
-      - name: Install Android SDK and aidl (with Java 17 fix)
+      - name: Install Android SDK and aidl (using Java 11)
         run: |
-          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip commandlinetools-linux-11076708_latest.zip
@@ -44,21 +45,11 @@ jobs:
           mv cmdline-tools android-sdk/cmdline-tools/latest
           export ANDROID_SDK_ROOT=$PWD/android-sdk
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-          
-          # Скачиваем недостающие JAR-файлы для Java 17
-          mkdir -p android-sdk/lib
-          wget -P android-sdk/lib/ https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar
-          wget -P android-sdk/lib/ https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.1/jaxb-impl-2.3.1.jar
-          wget -P android-sdk/lib/ https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
-          
-          # Добавляем JAR-файлы в classpath при вызове sdkmanager
-          export CLASSPATH="$ANDROID_SDK_ROOT/lib/jaxb-api-2.3.1.jar:$ANDROID_SDK_ROOT/lib/jaxb-impl-2.3.1.jar:$ANDROID_SDK_ROOT/lib/activation-1.1.1.jar"
-          
-          yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
-          sdkmanager "build-tools;33.0.2" --sdk_root=$ANDROID_SDK_ROOT
-          sdkmanager "platform-tools" --sdk_root=$ANDROID_SDK_ROOT
-          sdkmanager "platforms;android-30" --sdk_root=$ANDROID_SDK_ROOT
-          sdkmanager "tools" --sdk_root=$ANDROID_SDK_ROOT
+          yes | sdkmanager --licenses
+          sdkmanager "build-tools;33.0.2"
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-30"
+          sdkmanager "tools"
 
       - name: Set environment variables
         run: |
@@ -66,7 +57,6 @@ jobs:
           echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
           echo "$PWD/android-sdk/build-tools/33.0.2" >> $GITHUB_PATH
-          echo "$PWD/android-sdk/lib" >> $GITHUB_PATH
 
       - name: Link SDK for Buildozer
         run: |
@@ -79,13 +69,12 @@ jobs:
           pip install --user cython buildozer
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK
+      - name: Build APK (using Java 17)
         run: |
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
           export ANDROID_SDK_ROOT=$PWD/android-sdk
-          export PATH=$ANDROID_SDK_ROOT/build-tools/33.0.2:$ANDROID_SDK_ROOT/lib:$PATH
-          export CLASSPATH="$ANDROID_SDK_ROOT/lib/jaxb-api-2.3.1.jar:$ANDROID_SDK_ROOT/lib/jaxb-impl-2.3.1.jar:$ANDROID_SDK_ROOT/lib/activation-1.1.1.jar"
+          export PATH=$ANDROID_SDK_ROOT/build-tools/33.0.2:$PATH
           buildozer android debug deploy run
         env:
           ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
