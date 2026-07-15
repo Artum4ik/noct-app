@@ -58,11 +58,11 @@ jobs:
           echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
           echo "$PWD/android-sdk/build-tools/30.0.3" >> $GITHUB_PATH
 
-      - name: Link SDK for Buildozer
+      - name: Replace Buildozer's SDK with our SDK
         run: |
           mkdir -p ~/.buildozer/android/platform
           rm -rf ~/.buildozer/android/platform/android-sdk
-          ln -s $PWD/android-sdk ~/.buildozer/android/platform/android-sdk
+          cp -r $PWD/android-sdk ~/.buildozer/android/platform/android-sdk
 
       - name: Install Python packages
         run: |
