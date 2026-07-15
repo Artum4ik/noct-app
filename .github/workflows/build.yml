@@ -34,7 +34,7 @@ jobs:
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
           echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
 
-      - name: Install Android SDK and aidl
+      - name: Install Android SDK and aidl (with Java 17 fix)
         run: |
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
@@ -44,11 +44,19 @@ jobs:
           mv cmdline-tools android-sdk/cmdline-tools/latest
           export ANDROID_SDK_ROOT=$PWD/android-sdk
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-          yes | sdkmanager --licenses
-          sdkmanager "build-tools;33.0.2"
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-30"
-          sdkmanager "tools"
+          
+          # Добавляем недостающие JAR-файлы для Java 17
+          wget https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar
+          wget https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.1/jaxb-impl-2.3.1.jar
+          wget https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+          mkdir -p android-sdk/lib
+          mv *.jar android-sdk/lib/
+          
+          yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
+          sdkmanager "build-tools;33.0.2" --sdk_root=$ANDROID_SDK_ROOT
+          sdkmanager "platform-tools" --sdk_root=$ANDROID_SDK_ROOT
+          sdkmanager "platforms;android-30" --sdk_root=$ANDROID_SDK_ROOT
+          sdkmanager "tools" --sdk_root=$ANDROID_SDK_ROOT
 
       - name: Set environment variables
         run: |
@@ -56,6 +64,7 @@ jobs:
           echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
           echo "$PWD/android-sdk/build-tools/33.0.2" >> $GITHUB_PATH
+          echo "$PWD/android-sdk/lib" >> $GITHUB_PATH
 
       - name: Link SDK for Buildozer
         run: |
@@ -73,7 +82,7 @@ jobs:
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
           export ANDROID_SDK_ROOT=$PWD/android-sdk
-          export PATH=$ANDROID_SDK_ROOT/build-tools/33.0.2:$PATH
+          export PATH=$ANDROID_SDK_ROOT/build-tools/33.0.2:$ANDROID_SDK_ROOT/lib:$PATH
           buildozer android debug deploy run
         env:
           ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
