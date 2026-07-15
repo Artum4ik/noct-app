@@ -17,6 +17,8 @@ jobs:
           openjdk-17-jdk \
           autoconf \
           libtool \
+          autoconf-archive \
+          automake \
           pkg-config \
           zlib1g-dev \
           build-essential \
