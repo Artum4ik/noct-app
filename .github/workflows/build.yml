@@ -66,6 +66,8 @@ jobs:
         run: |
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
+          export ANDROID_SDK_ROOT=$PWD/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/build-tools/33.0.2:$PATH
           buildozer android debug deploy run
         env:
           ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
